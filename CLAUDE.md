@@ -4,7 +4,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Horizon 3.0.1** - Modern Shopify theme built with component-based architecture, web components, and TypeScript-enabled JavaScript.
+**Horizon 3.0.1** - Shopify's flagship free theme (launched May 2025), replacing Dawn as the new standard.
+
+Built on the **Horizon Framework** with:
+- Fully block-based architecture with deep nesting (up to 8 levels vs Dawn's 2 levels)
+- Global reusable blocks (marked with ⚡ icon in editor)
+- Modern web components and TypeScript-enabled JavaScript
+- Performance-optimized Liquid logic and lazy asset loading
+- Built-in marketing tools (swatches, swipeable product cards, enhanced search)
 
 **Store**: c2da09-15.myshopify.com
 **Theme ID**: 181526692156
@@ -46,17 +53,38 @@ npx tsc --noEmit
 
 ### Component Architecture
 
+**Horizon Framework - Block-Based Architecture:**
+
+Horizon represents a major evolution from Dawn's flat sections to modular, deeply nested blocks:
+
 **Three-tier component system:**
 
 1. **Sections** - Top-level containers with settings schema, can be added/reordered in theme editor
-2. **Blocks** - Modular components added to sections, defined in section's `{% schema %}`
+2. **Blocks** - Modular components that support **up to 8 levels of nesting**
+   - **Public blocks**: Shown in theme editor (e.g., `product-card.liquid`, `image.liquid`, `button.liquid`)
+   - **Private blocks**: Internal sub-components prefixed with `_` (e.g., `_product-details.liquid`)
+   - **Global blocks**: Reusable theme-level blocks marked with ⚡ icon, can be used anywhere in the store
+   - **Group/Split blocks**: Create multi-column layouts within a section
 3. **Snippets** - Reusable template partials rendered via `{% render 'snippet-name' %}`
 
-**Content-For Pattern:**
+**Content-For Pattern (Unique to Horizon):**
 ```liquid
 {% content_for 'blocks', closest.product: product %}
   <!-- Block content with context passing -->
 {% endcontent_for %}
+```
+
+This `{% content_for 'blocks' %}` tag defines where child blocks are rendered, enabling:
+- Complex multi-column layouts within one section
+- Nested groups (e.g., Group → Group → Image + Text)
+- Reusable components with consistent global updates
+
+**Example - Nested Block Structure:**
+```liquid
+<div class="promo-block" id="{{ block.id }}" {{ block.shopify_attributes }}>
+  <h2>{{ block.settings.title }}</h2>
+  {% content_for 'blocks' %}  <!-- Child blocks render here -->
+</div>
 ```
 
 ### JavaScript Architecture
@@ -110,6 +138,12 @@ Every section/block includes `{% schema %}` JSON block defining:
 - Presets for theme editor
 - Conditional visibility: `"visible_if": "{{ section.settings.setting_name }}"`
 
+**Enhanced Theme Editor:**
+- **Granular Theming**: Customize colors and fonts per section OR per block
+- **Block Inspector**: Visual hierarchy showing nested block structure
+- **Global Block Management**: Update global blocks from a centralized location
+- **Reusable Sections**: Ready-made seasonal or landing page templates
+
 ## Important Patterns & Conventions
 
 ### Liquid Best Practices
@@ -144,10 +178,27 @@ After making changes to `.js` files, verify no type errors were introduced.
 
 ### Block System
 
-**Public blocks** - Shown in theme editor, no underscore prefix
-**Private blocks** - Internal sub-components, prefixed with `_`
+**Block Types:**
+- **Public blocks** - Shown in theme editor, no underscore prefix
+- **Private blocks** - Internal sub-components, prefixed with `_`
+- **Global blocks** - Reusable across the entire store (homepage, product page, collection)
+  - Marked with ⚡ icon in theme editor
+  - Update once, changes reflect everywhere
+  - Eliminates need to duplicate or rebuild content manually
 
-Blocks use `content_for` to define content rendered in sections:
+**Deep Nesting (8 Levels):**
+Horizon supports complex nested structures like:
+```
+Section
+  └─ Group Block
+      └─ Group Block
+          └─ Split Block
+              └─ Image Block
+              └─ Text Block
+                  └─ Button Block
+```
+
+Blocks use `content_for` to define where children render:
 ```liquid
 {% content_for 'blocks', closest.product: product %}
 ```
@@ -172,18 +223,24 @@ Defines theme-level settings in Shopify Admin:
 
 ## Performance Optimizations
 
+Horizon is performance-optimized compared to Dawn:
+
 - **Critical CSS/JS**: `critical.js` loaded with `blocking="render"`
 - **View Transitions API**: Enabled via `view-transitions.js`
 - **Section Hydration**: Progressive enhancement via `section-hydration.js`
-- **Lazy Loading**: Images and media with `loading="lazy"`
+- **Lazy Asset Loading**: Images and media with `loading="lazy"`
+- **Optimized Liquid Logic**: Streamlined rendering for faster page loads
 - **Device Detection**: `isLowPowerDevice()` checks CPU/RAM for performance adaptations
 
 ## Accessibility Features
 
+Horizon includes improved accessibility by default:
+
 - Skip-to-content link via `skip-to-content-link.liquid`
 - Focus management in `focus.js`
+- Semantic HTML structure
+- Enhanced ARIA roles and labels throughout components
 - `role="main"` on content areas
-- ARIA labels throughout components
 
 ## Development Workflow
 
@@ -239,3 +296,38 @@ Defines theme-level settings in Shopify Admin:
 - `scripts.liquid`, `stylesheets.liquid`, `fonts.liquid` - Asset loading
 - `color-schemes.liquid` - Color scheme variables
 - `meta-tags.liquid` - SEO meta tags
+
+## Horizon vs Dawn - Key Differences
+
+| Feature | Horizon (2025) | Dawn (2021) |
+|---------|---------------|-------------|
+| **Architecture** | Fully block-based, modular | Section-based, flat |
+| **Nesting Depth** | Up to 8 levels | 2 levels (section → blocks) |
+| **Global Blocks** | ⚡ Reusable blocks across store | Manual duplication required |
+| **Editor UI** | Granular per-block theming | Section-level only |
+| **Layout Flexibility** | Group/Split blocks, complex grids | Limited to section templates |
+| **Content Pattern** | `{% content_for 'blocks' %}` | `{% section '...' %}` includes |
+| **Marketing Tools** | Built-in swatches, swipeable cards, enhanced search | Basic components |
+| **Performance** | Optimized Liquid + lazy loading | Standard performance |
+| **Shopify Plus** | Combined listings on free theme | Requires paid themes |
+| **Future Updates** | First to receive new features | Legacy support |
+
+## Built-in Marketing Features
+
+Horizon includes marketing tools out of the box:
+
+- **Variant Swatches**: Visual color/material selectors (`variant-swatches.liquid`)
+- **Swipeable Product Cards**: Mobile-optimized product browsing
+- **Enhanced Search**: Predictive search with autocomplete (`predictive-search.liquid`)
+- **Quick Add to Cart**: Add products without leaving collection pages (`quick-add.liquid`)
+- **Combined Listings**: Shopify Plus feature available on free theme
+- **Product Recommendations**: AI-powered suggestions (`product-recommendations.js`)
+
+## Future-Proofing
+
+Horizon is Shopify's new foundation for theme development:
+
+- **Latest Shopify Innovations Launch Here First**
+- **Horizon Framework** will receive ongoing updates and new features
+- **Active Development**: Dawn is in maintenance mode; Horizon is actively developed
+- **Modern Standards**: Built with current web platform APIs and best practices
