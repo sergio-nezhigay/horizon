@@ -38,16 +38,20 @@
 
   .header-menu--simple .menu-link {
     display: block;
-    padding: 12px 24px;
-    color: #1a202c;
+    padding: 6px 12px;
+    color: rgb(0, 30, 96);
     background: white;
     text-decoration: none;
     border-radius: 50px;
     transition: all 0.3s ease;
-    font-weight: 600;
+    font-weight: 300;
     font-size: 14px;
     white-space: nowrap;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    {% comment %}box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);{% endcomment %}
+  }
+
+  .submenu-item::marker {
+    content: none;
   }
 
   .header-menu--simple .menu-link:hover {
@@ -89,6 +93,14 @@
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     transform: translateX(5px);
+  }
+
+  .header__row--bottom {
+    background-color: #c9dcfd;
+  }
+  .menu-list {
+    border: none !important;
+    background: transparent !important;
   }
 
   /* Show on hover for pointer devices */
