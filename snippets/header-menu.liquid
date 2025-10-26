@@ -1,7 +1,5 @@
 {% liquid
   assign block_settings = block.settings
-  assign menu_content_type = block_settings.menu_style | default: 'text'
-  assign image_border_radius = block_settings.image_border_radius
   assign color_scheme_classes = ''
   assign color_scheme_setting_id = 'color_scheme_' | append: section.settings.menu_row
   assign current_color_scheme = block_settings.color_scheme
@@ -11,83 +9,201 @@
     assign color_scheme_classes = ' color-' | append: current_color_scheme
   endif
 
-  # Check if header and menu colors match. This is used to apply different padding styles in css
   if parent_color_scheme.settings.background.rgb == current_color_scheme.settings.background.rgb
     assign color_scheme_classes = color_scheme_classes | append: ' color-scheme-matches-parent'
   endif
-
-  if block_settings.menu_style == 'featured_collections'
-    assign ratio = block_settings.featured_collections_aspect_ratio
-  elsif block_settings.menu_style == 'featured_products'
-    assign ratio = block_settings.featured_products_aspect_ratio
-  endif
 %}
 
-{% capture children %}
-  {% for link in block_settings.menu.links %}
-    <li
-      role="presentation"
-      class="menu-list__list-item"
-      on:focus="/activate"
-      on:blur="/deactivate"
-      on:pointerenter="/activate"
-      on:pointerleave="/deactivate"
-    >
-      <a
-        href="{{ link.url }}"
-        data-skip-node-update="true"
-        class="menu-list__link{% if link.active %} menu-list__link--active{% endif %}"
-        {%- if link.links != blank -%}
-          aria-controls="submenu-{{ forloop.index }}"
-          aria-haspopup="true"
-          aria-expanded="false"
-        {%- endif -%}
-        ref="menuitem"
-      >
-        <span class="menu-list__link-title">{{- link.title -}}</span>
-      </a>
-      {%- if link.links != blank -%}
-        <div class="menu-list__submenu{{ color_scheme_classes }}" ref="submenu[]">
-          <div
-            id="submenu-{{ forloop.index }}"
-            class="menu-list__submenu-inner"
-            style="{% render 'submenu-font-styles', settings: block_settings %}"
-          >
-            {% assign list_id = 'MegaMenuList-' | append: forloop.index %}
-            {% render 'mega-menu',
-              section: section,
-              parent_link: link,
-              id: list_id,
-              menu_content_type: menu_content_type,
-              content_aspect_ratio: ratio,
-              image_border_radius: image_border_radius
-            %}
-          </div>
-        </div>
-      {%- endif -%}
-    </li>
-  {% endfor %}
-  <li
-    class="menu-list__list-item"
-    role="presentation"
-    slot="more"
-    on:focus="/activate"
-    on:blur="/deactivate"
-    on:pointerenter="/activate"
-    on:pointerleave="/deactivate"
-  >
-    <button role="menuitem" class="button menu-list__link button-unstyled">
-      <span class="menu-list__link-title">{{ 'actions.more' | t }}</span>
-    </button>
-  </li>
-{% endcapture %}
+<style>
+  .header-menu--simple {
+    position: relative;
+  }
 
-<nav header-menu>
-  <div
-    class="menu-list"
-    style="{% render 'menu-font-styles', settings: block_settings %}"
-  >
-    {% assign class = 'overflow-menu' | append: color_scheme_classes %}
-    {% render 'overflow-list', class: class, ref: 'overflowMenu', children: children, minimum-items: 2, defer: true %}
-  </div>
+  .header-menu--simple .menu-list {
+    display: flex;
+    gap: 8px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.15) 100%);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50px;
+    padding: 8px;
+    list-style: none;
+    margin: 0;
+    align-items: center;
+  }
+
+  .header-menu--simple .menu-item {
+    position: relative;
+  }
+
+  .header-menu--simple .menu-link {
+    display: block;
+    padding: 12px 24px;
+    color: #1a202c;
+    background: white;
+    text-decoration: none;
+    border-radius: 50px;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    font-size: 14px;
+    white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  }
+
+  .header-menu--simple .menu-link:hover {
+    background: #0071dc;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 113, 220, 0.3);
+  }
+
+  .header-menu--simple .submenu {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 0;
+    min-width: 220px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 15px;
+    padding: 10px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+  }
+
+  .header-menu--simple .submenu-link {
+    display: block;
+    padding: 10px 15px;
+    color: #2d3748;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    font-size: 0.95em;
+  }
+
+  .header-menu--simple .submenu-link:hover {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    transform: translateX(5px);
+  }
+
+  /* Show on hover for pointer devices */
+  @media (hover: hover) and (pointer: fine) {
+    .header-menu--simple .menu-item.has-children:hover > .submenu {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+    .header-menu--simple .menu-item.has-children:focus-within > .submenu {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+  }
+
+  /* Mobile styles */
+  @media (max-width: 768px) {
+    .header-menu--simple .menu-list {
+      flex-wrap: wrap;
+      border-radius: 20px;
+    }
+    .header-menu--simple .submenu {
+      position: relative;
+      top: 0;
+      left: 0;
+      opacity: 1;
+      visibility: visible;
+      transform: none;
+      box-shadow: none;
+      display: none;
+      width: 100%;
+    }
+    .header-menu--simple .menu-item.open > .submenu {
+      display: block;
+    }
+  }
+</style>
+
+<nav class="header-menu header-menu--simple{{ color_scheme_classes }}">
+  <ul class="menu-list" role="menubar" style="{% render 'menu-font-styles', settings: block_settings %}">
+    {% for link in block_settings.menu.links %}
+      <li class="menu-item{% if link.links != blank %} has-children{% endif %}" role="none">
+        <a
+          href="{{ link.url }}"
+          role="menuitem"
+          class="menu-link{% if link.active %} menu-link--active{% endif %}"
+          {% if link.links != blank %}
+            aria-haspopup="true" aria-expanded="false" data-has-children="true"
+          {% endif %}
+        >
+          <span class="menu-link__title">{{- link.title -}}</span>
+        </a>
+
+        {% if link.links != blank %}
+          <ul class="submenu" role="menu" aria-label="{{ link.title }} submenu">
+            {% for child in link.links %}
+              <li role="none" class="submenu-item">
+                <a
+                  href="{{ child.url }}"
+                  role="menuitem"
+                  class="submenu-link{% if child.active %} submenu-link--active{% endif %}"
+                >
+                  {{ child.title }}
+                </a>
+              </li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      </li>
+    {% endfor %}
+
+    <!-- More button fallback -->
+    <li class="menu-item menu-item--more" role="none">
+      <button role="menuitem" class="button menu-link button-unstyled">
+        <span class="menu-link__title">{{ 'actions.more' | t }}</span>
+      </button>
+    </li>
+  </ul>
 </nav>
+
+<script>
+  // Small script to toggle dropdowns on touch / small screens
+  (function () {
+    if (!document) return;
+    var menu = document.querySelector('.header-menu--simple');
+    if (!menu) return;
+
+    menu.addEventListener('click', function (e) {
+      var link = e.target.closest('.menu-link');
+      if (!link) return;
+      var parent = link.closest('.menu-item');
+      if (!parent || !parent.classList.contains('has-children')) return;
+
+      // On small screens, toggle open class instead of following the link
+      if (window.matchMedia('(max-width: 768px)').matches) {
+        e.preventDefault();
+        var isOpen = parent.classList.toggle('open');
+        var expanded = link.getAttribute('aria-expanded') === 'true';
+        link.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        return;
+      }
+
+      // On larger screens, allow default anchor behavior (hover handles dropdown)
+    });
+
+    // Close any open submenu when clicking outside
+    document.addEventListener('click', function (e) {
+      if (!menu.contains(e.target)) {
+        Array.from(menu.querySelectorAll('.menu-item.open')).forEach(function (item) {
+          item.classList.remove('open');
+          var a = item.querySelector('.menu-link[data-has-children]');
+          if (a) a.setAttribute('aria-expanded', 'false');
+        });
+      }
+    });
+  })();
+</script>
