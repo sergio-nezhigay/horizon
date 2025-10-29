@@ -1,14 +1,101 @@
 {%- doc -%}
-  Renders the search action button.
+  Renders the search action button or inline search.
 
-  @param {string} [style] - The style of the search action.
+  @param {string} [style] - The style of the search action (modal, inline, none).
   @param {string} [class] - Additional classes for the search action.
 
   @example
   {% render 'search', style: 'default', class: 'custom-class' %}
+  {% render 'search', style: 'inline', class: 'custom-class' %}
 {%- enddoc -%}
 
-{% unless style == 'none' %}
+{% if style == 'inline' %}
+  <script
+    src="{{ 'home-search.js' | asset_url }}"
+    type="module"
+    fetchpriority="low"
+  ></script>
+
+  <home-search-component
+    class="header-search{% if class != blank %} {{ class | strip }}{% endif %}"
+    style="--product-corner-radius: {{ settings.product_corner_radius | default: 8 | append: 'px' }}; --card-corner-radius: {{ settings.card_corner_radius | default: 8 | append: 'px' }};{% if settings.card_title_case == 'uppercase' %} --title-case: uppercase;{% endif %}"
+    data-section-id="predictive-search"
+    data-testid="header-search"
+    role="search"
+    aria-label="{{ 'content.search_input_label' | t }}"
+  >
+    <form
+      action="{{ routes.search_url }}"
+      method="get"
+      role="search"
+      class="header-search-form"
+      ref="form"
+      on:keydown="/onSearchKeyDown"
+    >
+      <div class="header-search-form__input-wrapper">
+        <label
+          for="header-search-input"
+          class="visually-hidden"
+        >
+          {{- 'content.search_input_label' | t -}}
+        </label>
+        <span class="svg-wrapper header-search__icon">
+          {{ 'icon-search.svg' | inline_asset_content }}
+        </span>
+        <input
+          class="header-search-input"
+          id="header-search-input"
+          type="search"
+          name="q"
+          role="combobox"
+          aria-expanded="false"
+          aria-owns="header-search-results"
+          aria-controls="header-search-results"
+          aria-haspopup="listbox"
+          aria-autocomplete="list"
+          autocomplete="off"
+          placeholder="{{ 'content.search_input_placeholder' | t }}"
+          ref="searchInput"
+          on:input="/search"
+          on:focus="/onFocusInput"
+          on:keydown="/onSearchKeyDown"
+        >
+        <input
+          name="options[prefix]"
+          type="hidden"
+          value="last"
+        >
+        <button
+          type="button"
+          class="button-unstyled header-search__reset-button"
+          ref="resetButton"
+          hidden
+          on:click="/resetSearch"
+        >
+          <span class="header-search__reset-icon">
+            {{ 'icon-close.svg' | inline_asset_content }}
+          </span>
+        </button>
+      </div>
+
+      <div
+        class="header-search-results"
+        id="header-search-results"
+        tabindex="-1"
+        ref="predictiveSearchResults"
+        hidden
+      >
+        <div class="header-search-results__content">
+          {% render 'predictive-search-empty-state',
+            load_empty_state: false,
+            shadow_opacity: 0.05
+          %}
+        </div>
+      </div>
+    </form>
+  </home-search-component>
+
+{% elsif style != 'none' %}
   <search-button class="search-action{% if class != blank %} {{ class | strip }}{% endif %}">
     <button
       on:click="#search-modal/showDialog"
@@ -24,7 +111,7 @@
       </span>
     </button>
   </search-button>
-{% endunless %}
+{% endif %}
 
 {% stylesheet %}
   .search-action {
@@ -48,6 +135,229 @@
   .header__column--right .search-action {
     @media screen and (min-width: 750px) {
       margin-inline: calc(var(--gap-md) * -1) calc(var(--gap-xs) * -1);
+    }
+  }
+
+  /* Header inline search styles */
+  home-search-component.header-search {
+    --resource-card-corner-radius: var(--product-corner-radius);
+
+    display: block;
+    width: 100%;
+    position: relative;
+    z-index: 100;
+  }
+
+  .header-search-form {
+    position: relative;
+    width: 100%;
+  }
+
+  .header-search-form__input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    background-color: rgb(var(--color-foreground-rgb) / var(--opacity-5));
+    border: 1px solid rgb(var(--color-foreground-rgb) / var(--opacity-10));
+    border-radius: var(--style-border-radius-inputs);
+    transition: border-color var(--animation-speed) ease,
+                background-color var(--animation-speed) ease;
+    min-height: 40px;
+
+    @media screen and (min-width: 750px) {
+      min-height: 44px;
+    }
+  }
+
+  .header-search-form__input-wrapper:focus-within {
+    background-color: var(--color-background);
+    border-color: rgb(var(--color-foreground-rgb) / var(--opacity-15));
+  }
+
+  .header-search-input {
+    flex: 1;
+    width: 100%;
+    padding: var(--padding-2xs) var(--padding-sm);
+    padding-inline-start: calc(var(--padding-lg) + var(--padding-md));
+    font-size: var(--font-size--sm);
+    color: var(--color-foreground);
+    background: transparent;
+    border: 0;
+    outline: none;
+    text-overflow: ellipsis;
+
+    @media screen and (min-width: 750px) {
+      font-size: var(--font-size--md);
+      padding-inline-start: calc(var(--padding-xl) + var(--padding-md));
+    }
+  }
+
+  .header-search-input::placeholder {
+    color: rgb(var(--color-foreground-rgb) / var(--opacity-40));
+  }
+
+  .header-search__icon {
+    position: absolute;
+    left: var(--padding-sm);
+    width: var(--icon-size-sm);
+    height: var(--icon-size-sm);
+    color: rgb(var(--color-foreground-rgb) / var(--opacity-50));
+    pointer-events: none;
+
+    @media screen and (min-width: 750px) {
+      left: var(--padding-md);
+      width: var(--icon-size-md);
+      height: var(--icon-size-md);
+    }
+  }
+
+  .header-search__icon > svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .header-search__reset-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0;
+    margin-inline-end: var(--margin-2xs);
+    background: transparent;
+    color: rgb(var(--color-foreground-rgb) / var(--opacity-60));
+    cursor: pointer;
+    transition: opacity var(--animation-speed) ease,
+                transform var(--animation-speed) ease;
+  }
+
+  .header-search__reset-button:hover {
+    color: var(--color-foreground);
+  }
+
+  .header-search__reset-button:active {
+    transform: scale(0.9);
+  }
+
+  .header-search__reset-button[hidden] {
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+  }
+
+  .header-search__reset-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--icon-size-sm);
+    height: var(--icon-size-sm);
+  }
+
+  .header-search__reset-icon > svg {
+    width: var(--icon-size-xs);
+    height: var(--icon-size-xs);
+  }
+
+  /* Header search results overlay */
+  .header-search-results {
+    position: absolute;
+    top: calc(100% + var(--margin-2xs));
+    left: 0;
+    right: 0;
+    z-index: 150;
+    background-color: var(--color-background);
+    border: 1px solid rgb(var(--color-foreground-rgb) / var(--opacity-8));
+    border-radius: var(--style-border-radius-popover);
+    box-shadow: 0 8px 24px rgb(0 0 0 / var(--opacity-8)),
+                0 2px 8px rgb(0 0 0 / var(--opacity-5));
+    opacity: 0;
+    transform: translateY(-8px);
+    transition: opacity var(--animation-speed) ease,
+                transform var(--animation-speed) ease;
+    pointer-events: none;
+    max-height: 70vh;
+    overflow: hidden;
+
+    @media screen and (min-width: 750px) {
+      max-height: 60vh;
+    }
+  }
+
+  .header-search-results.visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: all;
+  }
+
+  .header-search-results[hidden] {
+    display: none;
+  }
+
+  .header-search-results__content {
+    max-height: 70vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+
+    /* Firefox */
+    scrollbar-width: thin;
+    scrollbar-color: rgb(var(--color-foreground-rgb) / var(--opacity-10)) transparent;
+
+    /* Webkit browsers */
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background-color: rgb(var(--color-foreground-rgb) / var(--opacity-10));
+      border-radius: 3px;
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+      background-color: rgb(var(--color-foreground-rgb) / var(--opacity-20));
+    }
+
+    @media screen and (min-width: 750px) {
+      max-height: 60vh;
+    }
+  }
+
+  /* Adjust nested predictive search results styles for header */
+  .header-search-results .predictive-search-results__inner {
+    padding-block: var(--padding-sm);
+
+    @media screen and (min-width: 750px) {
+      padding-block: var(--padding-md);
+    }
+  }
+
+  /* Keyboard focus styles */
+  .header-search-results .predictive-search-results__card[aria-selected='true'].keyboard-focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: -2px;
+  }
+
+  /* Header column layout adjustments */
+  .header__column--center .header-search {
+    width: 100%;
+    max-width: 600px;
+    margin-inline: auto;
+  }
+
+  .header__column--left .header-search,
+  .header__column--right .header-search {
+    width: 100%;
+    min-width: 200px;
+    max-width: 400px;
+
+    @media screen and (min-width: 990px) {
+      min-width: 300px;
+      max-width: 500px;
     }
   }
 {% endstylesheet %}

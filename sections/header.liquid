@@ -11,7 +11,7 @@
   assign search_style = 'none'
 
   if section.settings.show_search
-    assign search_style = 'modal'
+    assign search_style = section.settings.search_style | default: 'modal'
   endif
 
   if section.settings.enable_transparent_header_home and template.name == 'index'
@@ -771,6 +771,24 @@
         }
       ],
       "default": "top",
+      "visible_if": "{{ section.settings.show_search }}"
+    },
+    {
+      "type": "select",
+      "id": "search_style",
+      "label": "Search style",
+      "options": [
+        {
+          "value": "modal",
+          "label": "Modal (popup)"
+        },
+        {
+          "value": "inline",
+          "label": "Inline (in header)"
+        }
+      ],
+      "default": "inline",
+      "info": "Choose between modal popup or inline search input",
       "visible_if": "{{ section.settings.show_search }}"
     },
     {
