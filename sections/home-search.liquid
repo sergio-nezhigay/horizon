@@ -1,0 +1,395 @@
+{%- doc -%}
+  Home page search section with predictive search functionality.
+
+  Features:
+  - Full-width search input (minimal & clean design)
+  - Absolute positioned predictive results overlay
+  - Recently viewed products in empty state
+  - Keyboard navigation support
+
+  @example
+  Add this section to your homepage via the theme editor
+{%- enddoc -%}
+
+<script
+  src="{{ 'home-search.js' | asset_url }}"
+  type="module"
+  fetchpriority="low"
+></script>
+
+{% render 'section', section: section, wrap: true %}
+
+<home-search-component
+  class="home-search color-{{ section.settings.color_scheme }}"
+  style="--product-corner-radius: {{ settings.product_corner_radius | default: 8 | append: 'px' }}; --card-corner-radius: {{ settings.card_corner_radius | default: 8 | append: 'px' }};{% if settings.card_title_case == 'uppercase' %} --title-case: uppercase;{% endif %}"
+  data-section-id="predictive-search"
+  data-testid="home-search"
+  role="search"
+  aria-label="{{ section.settings.title | default: 'Search' }}"
+>
+  <div class="home-search__wrapper">
+    {% if section.settings.title != blank %}
+      <h2 class="home-search__title">{{ section.settings.title }}</h2>
+    {% endif %}
+
+    <form
+      action="{{ routes.search_url }}"
+      method="get"
+      role="search"
+      class="home-search-form"
+      ref="form"
+      on:keydown="/onSearchKeyDown"
+    >
+      <div class="home-search-form__input-wrapper">
+        <label
+          for="home-search-input"
+          class="visually-hidden"
+        >
+          {{- section.settings.placeholder | default: 'Search...' -}}
+        </label>
+        <span class="svg-wrapper home-search__icon">
+          {{ 'icon-search.svg' | inline_asset_content }}
+        </span>
+        <input
+          class="home-search-input"
+          id="home-search-input"
+          type="search"
+          name="q"
+          role="combobox"
+          aria-expanded="false"
+          aria-owns="home-search-results"
+          aria-controls="home-search-results"
+          aria-haspopup="listbox"
+          aria-autocomplete="list"
+          autocomplete="off"
+          placeholder="{{ section.settings.placeholder | default: 'Search...' }}"
+          ref="searchInput"
+          on:input="/search"
+          on:focus="/onFocusInput"
+          on:keydown="/onSearchKeyDown"
+        >
+        <input
+          name="options[prefix]"
+          type="hidden"
+          value="last"
+        >
+        <button
+          type="button"
+          class="button-unstyled home-search__reset-button"
+          ref="resetButton"
+          hidden
+          on:click="/resetSearch"
+        >
+          <span class="home-search__reset-icon">
+            {{ 'icon-close.svg' | inline_asset_content }}
+          </span>
+        </button>
+      </div>
+
+      <div
+        class="home-search-results"
+        id="home-search-results"
+        tabindex="-1"
+        ref="predictiveSearchResults"
+        hidden
+      >
+        <div class="home-search-results__content">
+          {% render 'predictive-search-empty-state',
+            load_empty_state: false,
+            shadow_opacity: 0.05
+          %}
+        </div>
+      </div>
+    </form>
+  </div>
+</home-search-component>
+
+{% render 'section', closing: true %}
+
+{% stylesheet %}
+  home-search-component {
+    --resource-card-corner-radius: var(--product-corner-radius);
+
+    display: block;
+    width: 100%;
+    position: relative;
+    z-index: 10;
+  }
+
+  .home-search__wrapper {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding-inline: var(--padding-md);
+
+    @media screen and (min-width: 750px) {
+      padding-inline: var(--padding-lg);
+    }
+  }
+
+  .home-search__title {
+    font-size: var(--font-size--xl);
+    font-weight: var(--font-weight-heading);
+    text-align: center;
+    margin-block-end: var(--margin-lg);
+    color: var(--color-foreground);
+
+    @media screen and (min-width: 750px) {
+      font-size: var(--font-size--2xl);
+      margin-block-end: var(--margin-xl);
+    }
+  }
+
+  .home-search-form {
+    position: relative;
+    width: 100%;
+  }
+
+  .home-search-form__input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    background-color: var(--color-background);
+    border: 1px solid rgb(var(--color-foreground-rgb) / var(--opacity-10));
+    border-radius: var(--style-border-radius-inputs);
+    transition: border-color var(--animation-speed) ease,
+                box-shadow var(--animation-speed) ease;
+    min-height: 48px;
+
+    @media screen and (min-width: 750px) {
+      min-height: 56px;
+    }
+  }
+
+  .home-search-form__input-wrapper:focus-within {
+    border-color: rgb(var(--color-foreground-rgb) / var(--opacity-20));
+    box-shadow: 0 0 0 3px rgb(var(--color-primary-rgb) / var(--opacity-10));
+  }
+
+  .home-search-input {
+    flex: 1;
+    width: 100%;
+    padding: var(--padding-sm) var(--padding-md);
+    padding-inline-start: calc(var(--padding-2xl) + var(--padding-md));
+    font-size: var(--font-size--md);
+    color: var(--color-foreground);
+    background: transparent;
+    border: 0;
+    outline: none;
+    text-overflow: ellipsis;
+
+    @media screen and (min-width: 750px) {
+      font-size: var(--font-size--lg);
+      padding-inline-start: calc(var(--padding-3xl) + var(--padding-md));
+    }
+  }
+
+  .home-search-input::placeholder {
+    color: rgb(var(--color-foreground-rgb) / var(--opacity-40));
+  }
+
+  .home-search__icon {
+    position: absolute;
+    left: var(--padding-md);
+    width: var(--icon-size-md);
+    height: var(--icon-size-md);
+    color: rgb(var(--color-foreground-rgb) / var(--opacity-50));
+    pointer-events: none;
+
+    @media screen and (min-width: 750px) {
+      left: var(--padding-lg);
+      width: var(--icon-size-lg);
+      height: var(--icon-size-lg);
+    }
+  }
+
+  .home-search__icon > svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .home-search__reset-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--minimum-touch-target);
+    height: var(--minimum-touch-target);
+    padding: 0;
+    margin-inline-end: var(--margin-sm);
+    background: transparent;
+    color: rgb(var(--color-foreground-rgb) / var(--opacity-60));
+    cursor: pointer;
+    transition: opacity var(--animation-speed) ease,
+                transform var(--animation-speed) ease;
+  }
+
+  .home-search__reset-button:hover {
+    color: var(--color-foreground);
+  }
+
+  .home-search__reset-button:active {
+    transform: scale(0.9);
+  }
+
+  .home-search__reset-button[hidden] {
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+  }
+
+  .home-search__reset-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--icon-size-md);
+    height: var(--icon-size-md);
+  }
+
+  .home-search__reset-icon > svg {
+    width: var(--icon-size-sm);
+    height: var(--icon-size-sm);
+  }
+
+  /* Predictive search results overlay */
+  .home-search-results {
+    position: absolute;
+    top: calc(100% + var(--margin-xs));
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background-color: var(--color-background);
+    border: 1px solid rgb(var(--color-foreground-rgb) / var(--opacity-8));
+    border-radius: var(--style-border-radius-popover);
+    box-shadow: 0 8px 24px rgb(0 0 0 / var(--opacity-8)),
+                0 2px 8px rgb(0 0 0 / var(--opacity-5));
+    opacity: 0;
+    transform: translateY(-8px);
+    transition: opacity var(--animation-speed) ease,
+                transform var(--animation-speed) ease;
+    pointer-events: none;
+    max-height: 70vh;
+    overflow: hidden;
+
+    @media screen and (min-width: 750px) {
+      max-height: 60vh;
+    }
+  }
+
+  .home-search-results.visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: all;
+  }
+
+  .home-search-results[hidden] {
+    display: none;
+  }
+
+  .home-search-results__content {
+    max-height: 70vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+
+    /* Firefox */
+    scrollbar-width: thin;
+    scrollbar-color: rgb(var(--color-foreground-rgb) / var(--opacity-10)) transparent;
+
+    /* Webkit browsers */
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background-color: rgb(var(--color-foreground-rgb) / var(--opacity-10));
+      border-radius: 3px;
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+      background-color: rgb(var(--color-foreground-rgb) / var(--opacity-20));
+    }
+
+    @media screen and (min-width: 750px) {
+      max-height: 60vh;
+    }
+  }
+
+  /* Adjust nested predictive search results styles */
+  .home-search-results .predictive-search-results__inner {
+    padding-block: var(--padding-md);
+
+    @media screen and (min-width: 750px) {
+      padding-block: var(--padding-lg);
+    }
+  }
+
+  /* Mobile responsiveness */
+  @media screen and (max-width: 749px) {
+    .home-search-results {
+      left: calc(-1 * var(--padding-md));
+      right: calc(-1 * var(--padding-md));
+      width: calc(100% + (2 * var(--padding-md)));
+      border-radius: var(--style-border-radius-inputs);
+    }
+  }
+
+  /* Keyboard focus styles */
+  .home-search-results .predictive-search-results__card[aria-selected='true'].keyboard-focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: -2px;
+  }
+
+  /* Animation for empty state */
+  .home-search-results .predictive-search-empty-section {
+    animation: fadeIn var(--animation-speed) ease;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Home Search",
+  "tag": "section",
+  "class": "section-home-search",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Section title",
+      "default": "Search our store",
+      "info": "Leave blank to hide"
+    },
+    {
+      "type": "text",
+      "id": "placeholder",
+      "label": "Search placeholder",
+      "default": "Search for products..."
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme_1"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Home Search",
+      "category": "Search"
+    }
+  ]
+}
+{% endschema %}
