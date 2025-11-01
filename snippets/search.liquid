@@ -161,21 +161,22 @@
     align-items: center;
     width: 100%;
     background-color: white;
-    border: 2px solid rgb(var(--color-foreground-rgb) / var(--opacity-20));
+    border: 1px solid rgb(var(--color-foreground-rgb) / var(--opacity-50));
     border-radius: 50px;
-    transition: border-color var(--animation-speed) ease, background-color var(--animation-speed) ease, box-shadow var(--animation-speed) ease;
+    transition: border-color var(--animation-speed) ease, background-color var(--animation-speed) ease,
+      box-shadow var(--animation-speed) ease;
     min-height: 48px;
     padding-inline-end: 4px;
 
     @media screen and (min-width: 750px) {
-      min-height: 56px;
+      min-height: 50px;
       padding-inline-end: 6px;
     }
   }
 
   .header-search-form__input-wrapper:focus-within {
-    border-color: #0071dc;
-    box-shadow: 0 0 0 1px #0071dc;
+    border-color: #001e60;
+    box-shadow: 0 0 0 1px #001e60;
   }
 
   .header-search-input {
@@ -193,9 +194,13 @@
 
     @media screen and (min-width: 750px) {
       font-size: var(--font-size--lg);
-      padding: var(--padding-md) var(--padding-lg);
+      /*padding: 6px 12px;*/
       padding-inline-end: var(--padding-md);
     }
+  }
+
+  .header-search-input:hover {
+    background: transparent;
   }
 
   .header-search-input::placeholder {
@@ -207,12 +212,12 @@
     position: relative;
     right: auto;
     left: auto;
-    width: 40px;
-    height: 40px;
+    width: 30px;
+    height: 30px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: #0071dc;
+    background-color: #001e60;
     border-radius: 50%;
     color: white;
     pointer-events: auto;
@@ -222,8 +227,8 @@
     order: 2;
 
     @media screen and (min-width: 750px) {
-      width: 48px;
-      height: 48px;
+      width: 38px;
+      height: 38px;
     }
   }
 
@@ -252,7 +257,8 @@
     background: transparent;
     color: rgb(var(--color-foreground-rgb) / var(--opacity-60));
     cursor: pointer;
-    transition: opacity var(--animation-speed) ease, transform var(--animation-speed) ease, color var(--animation-speed) ease;
+    transition: opacity var(--animation-speed) ease, transform var(--animation-speed) ease,
+      color var(--animation-speed) ease;
     order: 1;
 
     @media screen and (min-width: 750px) {
@@ -385,11 +391,5 @@
   .header__column--right .header-search {
     width: 100%;
     min-width: 280px;
-    max-width: 500px;
-
-    @media screen and (min-width: 990px) {
-      min-width: 400px;
-      max-width: 800px;
-    }
   }
 {% endstylesheet %}
