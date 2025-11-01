@@ -91,6 +91,7 @@ class HomeSearchComponent extends Component {
   #hideResults() {
     this.#isResultsVisible = false;
     this.refs.predictiveSearchResults.classList.remove('visible');
+    this.#hideViewAllButton();
     // Use animation end to hide for smooth transition
     setTimeout(() => {
       if (!this.#isResultsVisible) {
@@ -322,6 +323,16 @@ class HomeSearchComponent extends Component {
         morph(predictiveSearchResults, resultsMarkup);
 
         this.#resetScrollPositions();
+
+        // Show/hide view all button based on results
+        const hasResults = this.refs.predictiveSearchResults.querySelector('[data-search-results]');
+        const hasNoResults = this.refs.predictiveSearchResults.querySelector('.predictive-search-results__no-results');
+
+        if (hasResults && !hasNoResults) {
+          this.#showViewAllButton();
+        } else {
+          this.#hideViewAllButton();
+        }
       })
       .catch((error) => {
         if (abortController.signal.aborted) return;
@@ -356,6 +367,20 @@ class HomeSearchComponent extends Component {
     resetButton.hidden = false;
   }
 
+  #hideViewAllButton() {
+    const { viewAllFooter } = this.refs;
+    if (viewAllFooter) {
+      viewAllFooter.hidden = true;
+    }
+  }
+
+  #showViewAllButton() {
+    const { viewAllFooter } = this.refs;
+    if (viewAllFooter) {
+      viewAllFooter.hidden = false;
+    }
+  }
+
   #createAbortController() {
     const abortController = new AbortController();
     if (this.#activeFetch) {
@@ -372,6 +397,7 @@ class HomeSearchComponent extends Component {
     this.#currentIndex = -1;
     searchInput.value = '';
     this.#hideResetButton();
+    this.#hideViewAllButton();
 
     const abortController = this.#createAbortController();
     const url = new URL(window.location.href);
