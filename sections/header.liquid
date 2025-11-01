@@ -1,5 +1,3 @@
-
-
 {% liquid
   assign order = 'logo,menu,localization,search,mobile_search,actions'
 
@@ -11,7 +9,7 @@
   assign search_style = 'none'
 
   if section.settings.show_search
-    assign search_style = section.settings.search_style | default: 'modal'
+    assign search_style = section.settings.search_style | default: 'inline'
   endif
 
   if section.settings.enable_transparent_header_home and template.name == 'index'
@@ -47,6 +45,10 @@
     content_for 'block', type: '_header-logo', id: 'header-logo'
   endcapture
 
+  # Note: The same block ID 'header-menu' is referenced multiple times below.
+  # This is intentional in Horizon's architecture - the 'variant' parameter
+  # tells the block how to render (desktop/mobile/navigation bar).
+  # The Shopify theme editor may show a validation warning, but this is safe to ignore.
   capture menu
     content_for 'block', type: '_header-menu', id: 'header-menu'
   endcapture
@@ -132,7 +134,7 @@
     assign bottom_row_blocks = bottom_row_blocks | append: 'menu,'
   endif
 
-  if section.settings.search_style != 'none'
+  if search_style != 'none'
     if section.settings.search_row == 'bottom'
       assign bottom_row_blocks = bottom_row_blocks | append: 'search,'
     endif
