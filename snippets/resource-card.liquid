@@ -166,6 +166,11 @@
     position: absolute;
     inset: 0;
     z-index: 1;
+    border: 1px dotted red; /* For accessibility testing purposes */
+  }
+
+  .resource-card__media {
+    outline: 1px solid blue;
   }
 
   .resource-card__content {
@@ -186,7 +191,7 @@
 
   .resource-card__image {
     aspect-ratio: var(--resource-card-aspect-ratio, auto);
-    object-fit: cover;
+    object-fit: contain;
     border-radius: var(--resource-card-corner-radius);
     opacity: var(--resource-card-primary-image-opacity);
   }
