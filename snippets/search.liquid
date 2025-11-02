@@ -88,14 +88,6 @@
         <div class="header-search-results__content">
           {% render 'predictive-search-empty-state', load_empty_state: false, shadow_opacity: 0.05 %}
         </div>
-        <div class="header-search-results__footer" ref="viewAllFooter">
-          <button
-            class="button button-primary header-search__view-all-button"
-            type="submit"
-          >
-            {{ 'content.search_results_view_all' | t }}
-          </button>
-        </div>
       </div>
     </form>
   </home-search-component>
@@ -379,44 +371,6 @@
     @media screen and (min-width: 750px) {
       padding-block: var(--padding-md);
     }
-  }
-
-  /* Header search results footer with View All button */
-  .header-search-results__footer {
-    flex-shrink: 0;
-    padding-block: var(--padding-xs) var(--padding-lg);
-    background-image: linear-gradient(
-      to top,
-      rgb(255 255 255 / 0.98),
-      rgb(255 255 255 / 0.9),
-      rgb(255 255 255 / 0.6),
-      transparent
-    );
-    /*margin-top: calc(var(--padding-6xl) * -1);*/
-    pointer-events: none;
-  }
-
-  .header-search__view-all-button {
-    margin: 0 auto;
-    pointer-events: all;
-    transition: transform var(--animation-speed) ease, box-shadow var(--animation-speed) ease;
-    transform-origin: center;
-  }
-
-  .header-search__view-all-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgb(0 0 0 / 0.08);
-  }
-
-  .header-search__view-all-button:active {
-    transform: scale(0.97);
-    transition: transform 100ms ease;
-    box-shadow: none;
-  }
-
-  /* Add bottom padding to content for the button */
-  .header-search-results__content {
-    padding-block-end: var(--padding-6xl);
   }
 
   /* Keyboard focus styles */
