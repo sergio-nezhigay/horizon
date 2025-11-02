@@ -82,11 +82,16 @@
         class="header-search-results"
         id="header-search-results"
         tabindex="-1"
-        ref="predictiveSearchResults"
+        ref="searchResultsContainer"
         hidden
       >
-        <div class="header-search-results__content">
+        <div class="header-search-results__content" ref="predictiveSearchResults">
           {% render 'predictive-search-empty-state', load_empty_state: false, shadow_opacity: 0.05 %}
+        </div>
+        <div class="header-search-results__footer" ref="viewAllFooter" hidden>
+          <button class="button button-primary header-search__view-all-button">
+            {{ 'content.search_results_view_all' | t }}
+          </button>
         </div>
       </div>
     </form>
@@ -364,6 +369,13 @@
     }
   }
 
+  /* Add bottom padding when View All button is visible (desktop only) */
+  .header-search-results:has(.header-search-results__footer:not([hidden])) .header-search-results__content {
+    @media screen and (min-width: 750px) {
+      padding-block-end: var(--padding-6xl);
+    }
+  }
+
   /* Adjust nested predictive search results styles for header */
   .header-search-results .predictive-search-results__inner {
     padding-block: var(--padding-sm);
@@ -377,6 +389,40 @@
   .header-search-results .predictive-search-results__card[aria-selected='true'].keyboard-focus {
     outline: 2px solid var(--color-primary);
     outline-offset: -2px;
+  }
+
+  /* View All button footer - Desktop only */
+  .header-search-results__footer {
+    flex-shrink: 0;
+    padding: var(--padding-md) var(--padding-lg);
+    background-color: #fff;
+    border-top: 1px solid rgb(var(--color-foreground-rgb) / var(--opacity-8));
+    pointer-events: none;
+
+    @media screen and (max-width: 749px) {
+      display: none !important;
+    }
+  }
+
+  .header-search__view-all-button {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+    pointer-events: all;
+    transition: transform var(--animation-speed-medium) var(--animation-timing-bounce),
+      box-shadow var(--animation-speed-medium) var(--animation-timing-hover);
+    transform-origin: center;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgb(0 0 0 / var(--opacity-5));
+    }
+
+    &:active {
+      transform: scale(0.97);
+      transition: transform 100ms var(--animation-timing-active);
+      box-shadow: none;
+    }
   }
 
   /* Header column layout adjustments */

@@ -81,8 +81,9 @@ class HomeSearchComponent extends Component {
    */
   #showResults() {
     this.#isResultsVisible = true;
-    this.refs.predictiveSearchResults.classList.add('visible');
-    this.refs.predictiveSearchResults.hidden = false;
+    const container = this.refs.searchResultsContainer || this.refs.predictiveSearchResults;
+    container.classList.add('visible');
+    container.hidden = false;
   }
 
   /**
@@ -90,12 +91,13 @@ class HomeSearchComponent extends Component {
    */
   #hideResults() {
     this.#isResultsVisible = false;
-    this.refs.predictiveSearchResults.classList.remove('visible');
+    const container = this.refs.searchResultsContainer || this.refs.predictiveSearchResults;
+    container.classList.remove('visible');
     this.#hideViewAllButton();
     // Use animation end to hide for smooth transition
     setTimeout(() => {
       if (!this.#isResultsVisible) {
-        this.refs.predictiveSearchResults.hidden = true;
+        container.hidden = true;
       }
     }, 200);
   }
