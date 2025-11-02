@@ -406,22 +406,49 @@
 
   .header-search__view-all-button {
     width: 100%;
-    max-width: 400px;
+    max-width: 200px;
     margin: 0 auto;
     pointer-events: all;
     transition: transform var(--animation-speed-medium) var(--animation-timing-bounce),
       box-shadow var(--animation-speed-medium) var(--animation-timing-hover);
     transform-origin: center;
-
+    color: #d4a01d;
+    background: transparent;
+    border: 2px solid #f5b700;
+    padding: 12px 32px;
+    border-radius: 8px;
+    box-shadow: none;
+    font-weight: 600;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
     &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgb(0 0 0 / var(--opacity-5));
+      background: #f5b700;
+      color: #1a1a2e;
+      box-shadow: 0 4px 12px rgba(255, 194, 32, 0.3);
+      transform: translateY(-1px);
     }
 
     &:active {
-      transform: scale(0.97);
-      transition: transform 100ms var(--animation-timing-active);
-      box-shadow: none;
+      transform: translateY(0);
+      box-shadow: 0 2px 8px rgba(255, 194, 32, 0.2);
+    }
+
+    &::after {
+      content: '→';
+      transition: transform 0.25s ease;
+    }
+
+    &:hover::after {
+      transform: translateX(3px);
+    }
+
+    &:focus {
+      outline: 2px solid rgba(255, 194, 32, 0.5);
+      outline-offset: 2px;
     }
   }
 
