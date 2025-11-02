@@ -42,6 +42,8 @@
     color: rgb(0, 30, 96);
     background: white;
     text-decoration: none;
+    border: 1px solid;
+    border-color: transparent;
     border-radius: 50px;
     transition: all 0.3s ease;
     font-weight: 300;
@@ -52,11 +54,7 @@
   }
 
   .header-menu--simple .menu-link.menu-link--active {
-    background: #1063c7;
-    color: #fff;
-    font-weight: 600;
-    box-shadow: 0 2px 12px rgba(16, 99, 199, 0.1);
-    border: 2px solid #1063c7;
+    border: 1px solid #1060c1;
   }
 
   .submenu-item::marker {
@@ -64,16 +62,11 @@
   }
 
   .header-menu--simple .submenu-link.submenu-link--active {
-    background: #e3edfc;
-    color: #1063c7;
     font-weight: 600;
-    border-left: 4px solid #1063c7;
   }
 
   .header-menu--simple .menu-link:hover {
-    background: #1063c7;
-    color: white;
-    transform: translateY(-2px);
+    border-color: #1060c1;
   }
 
   .header__row--bottom {
@@ -103,13 +96,28 @@
     padding: 10px 15px;
     color: #2d3748;
     text-decoration: none;
-    border-radius: 8px;
-    transition: all 0.2s ease;
+    border-radius: 0;
+    transition: background-color 0.2s ease;
     font-size: 0.95em;
+    position: relative;
   }
 
   .header-menu--simple .submenu-link:hover {
     background: #e9f1fe;
+    margin-left: -10px;
+    margin-right: -10px;
+    padding-left: 25px;
+    padding-right: 25px;
+  }
+
+  .header-menu--simple .submenu-link:hover::before {
+    content: '';
+    position: absolute;
+    left: -1px;
+    top: 4px;
+    bottom: 4px;
+    width: 3px;
+    background: #1060c1;
   }
 
   .header__row--bottom {
