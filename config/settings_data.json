@@ -160,12 +160,12 @@
       },
       "scheme-3": {
         "settings": {
-          "background": "#1060c1",
+          "background": "#0053e2",
           "foreground_heading": "#ffffff",
           "foreground": "#f0f4f8",
           "primary": "#ffffff",
           "primary_hover": "#f0f7ff",
-          "border": "#3a7dd4",
+          "border": "#0053e2",
           "shadow": "#000000",
           "primary_button_background": "#10a37f",
           "primary_button_text": "#ffffff",
